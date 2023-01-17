@@ -6,7 +6,7 @@ import QuickLRU from '@alloc/quick-lru'
 import { createUnzip, createBrotliDecompress } from 'zlib'
 import streamToPromise from 'stream-to-promise'
 import { KeyValueCache } from 'apollo-server-caching'
-import Dispatcher, { HttpMethod, ResponseData } from 'undici/types/dispatcher'
+import Dispatcher from 'undici/types/dispatcher'
 import { toApolloError } from 'apollo-server-errors'
 import { EventEmitter } from 'stream'
 import { Logger } from 'apollo-server-types'
@@ -49,7 +49,7 @@ export type Request<T = unknown, BaseURLContext = unknown> = {
   json?: boolean
   origin: string
   path: string
-  method: HttpMethod
+  method: Dispatcher.HttpMethod
   // Indicates if the response of this request should be memoized
   memoize?: boolean
   headers: Dictionary<string>
@@ -62,7 +62,7 @@ export type Response<TResult> = {
   isFromCache: boolean
   // maximum ttl (seconds)
   maxTtl?: number
-} & Omit<ResponseData, 'body'>
+} & Omit<Dispatcher.ResponseData, 'body'>
 
 export interface LRUOptions {
   readonly maxAge?: number

@@ -17,8 +17,7 @@ const agent = new undici_1.Agent({
     keepAliveMaxTimeout: 10,
 });
 (0, undici_1.setGlobalDispatcher)(agent);
-const test = ava_1.default;
-test('Should be able to make a simple GET call', async (t) => {
+(0, ava_1.default)('Should be able to make a simple GET call', async (t) => {
     t.plan(5);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -49,7 +48,7 @@ test('Should be able to make a simple GET call', async (t) => {
     t.falsy(response.maxTtl);
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to make a simple POST call', async (t) => {
+(0, ava_1.default)('Should be able to make a simple POST call', async (t) => {
     t.plan(2);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -77,7 +76,7 @@ test('Should be able to make a simple POST call', async (t) => {
     const response = await dataSource.postFoo();
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to make a simple POST with JSON body', async (t) => {
+(0, ava_1.default)('Should be able to make a simple POST with JSON body', async (t) => {
     t.plan(4);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -117,7 +116,7 @@ test('Should be able to make a simple POST with JSON body', async (t) => {
     const response = await dataSource.postFoo();
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to make a simple DELETE call', async (t) => {
+(0, ava_1.default)('Should be able to make a simple DELETE call', async (t) => {
     t.plan(2);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -145,7 +144,7 @@ test('Should be able to make a simple DELETE call', async (t) => {
     const response = await dataSource.deleteFoo();
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to make a simple PUT call', async (t) => {
+(0, ava_1.default)('Should be able to make a simple PUT call', async (t) => {
     t.plan(2);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -173,7 +172,7 @@ test('Should be able to make a simple PUT call', async (t) => {
     const response = await dataSource.putFoo();
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to make a simple PATCH call', async (t) => {
+(0, ava_1.default)('Should be able to make a simple PATCH call', async (t) => {
     t.plan(2);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -201,7 +200,7 @@ test('Should be able to make a simple PATCH call', async (t) => {
     const response = await dataSource.patchFoo();
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to pass query params', async (t) => {
+(0, ava_1.default)('Should be able to pass query params', async (t) => {
     t.plan(3);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -236,7 +235,7 @@ test('Should be able to pass query params', async (t) => {
     const response = await dataSource.getFoo();
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should error on HTTP errors > 299 and != 304', async (t) => {
+(0, ava_1.default)('Should error on HTTP errors > 299 and != 304', async (t) => {
     t.plan(4);
     const path = '/';
     const server = http_1.default.createServer((req, res) => {
@@ -273,7 +272,7 @@ test('Should error on HTTP errors > 299 and != 304', async (t) => {
         message: 'Response code 500 (Internal Server Error)',
     }, 'Internal Server Error');
 });
-test('Should not parse content as JSON when content-type header is missing', async (t) => {
+(0, ava_1.default)('Should not parse content as JSON when content-type header is missing', async (t) => {
     t.plan(3);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -300,7 +299,7 @@ test('Should not parse content as JSON when content-type header is missing', asy
     t.is(response.statusCode, 200);
     t.is(response.body, JSON.stringify(wanted));
 });
-test('Should memoize subsequent GET calls to the same endpoint', async (t) => {
+(0, ava_1.default)('Should memoize subsequent GET calls to the same endpoint', async (t) => {
     t.plan(17);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -346,7 +345,7 @@ test('Should memoize subsequent GET calls to the same endpoint', async (t) => {
     t.true(response.memoized);
     t.falsy(response.maxTtl);
 });
-test('Should memoize subsequent GET calls to the same endpoint when the memoize option is undefined', async (t) => {
+(0, ava_1.default)('Should memoize subsequent GET calls to the same endpoint when the memoize option is undefined', async (t) => {
     t.plan(17);
     const path = '/';
     const MAX_SUBSEQUENT_CALLS = 3;
@@ -385,7 +384,7 @@ test('Should memoize subsequent GET calls to the same endpoint when the memoize 
         t.falsy(subsequentCall.maxTtl);
     }
 });
-test('Should memoize subsequent GET calls to the same endpoint when the memoize option is true', async (t) => {
+(0, ava_1.default)('Should memoize subsequent GET calls to the same endpoint when the memoize option is true', async (t) => {
     t.plan(17);
     const path = '/';
     const MAX_SUBSEQUENT_CALLS = 3;
@@ -424,7 +423,7 @@ test('Should memoize subsequent GET calls to the same endpoint when the memoize 
         t.falsy(subsequentCall.maxTtl);
     }
 });
-test('Should not memoize subsequent GET calls to the same endpoint when the memoize option is false', async (t) => {
+(0, ava_1.default)('Should not memoize subsequent GET calls to the same endpoint when the memoize option is false', async (t) => {
     t.plan(15);
     const path = '/';
     const MAX_CALLS = 3;
@@ -458,7 +457,7 @@ test('Should not memoize subsequent GET calls to the same endpoint when the memo
         t.falsy(subsequentCall.maxTtl);
     }
 });
-test('Should not memoize subsequent GET calls for unsuccessful responses', async (t) => {
+(0, ava_1.default)('Should not memoize subsequent GET calls for unsuccessful responses', async (t) => {
     t.plan(17);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -512,7 +511,7 @@ test('Should not memoize subsequent GET calls for unsuccessful responses', async
         message: 'Response code 500 (Internal Server Error)',
     });
 });
-test('Should be able to define a custom cache key for request memoization', async (t) => {
+(0, ava_1.default)('Should be able to define a custom cache key for request memoization', async (t) => {
     t.plan(7);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -547,7 +546,7 @@ test('Should be able to define a custom cache key for request memoization', asyn
     response = await dataSource.getFoo();
     t.deepEqual(response.body, wanted);
 });
-test('Should correctly calculate and sort query parameters', async (t) => {
+(0, ava_1.default)('Should correctly calculate and sort query parameters', async (t) => {
     t.plan(3);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -582,7 +581,7 @@ test('Should correctly calculate and sort query parameters', async (t) => {
     let response = await dataSource.getFoo();
     t.deepEqual(response.body, wanted);
 });
-test('Should call onError on request error', async (t) => {
+(0, ava_1.default)('Should call onError on request error', async (t) => {
     t.plan(11);
     const path = '/';
     const server = http_1.default.createServer((req, res) => {
@@ -625,7 +624,7 @@ test('Should call onError on request error', async (t) => {
         message: 'Response code 500 (Internal Server Error)',
     }, 'Server error');
 });
-test('Should be possible to pass a request context', async (t) => {
+(0, ava_1.default)('Should be possible to pass a request context', async (t) => {
     t.plan(3);
     const path = '/';
     const server = http_1.default.createServer((req, res) => {
@@ -657,7 +656,7 @@ test('Should be possible to pass a request context', async (t) => {
     })();
     await dataSource.getFoo();
 });
-test.cb('Should abort request when abortController signal is called', (t) => {
+(0, ava_1.default)('Should abort request when abortController signal is called', async (t) => {
     t.plan(2);
     const path = '/';
     const server = http_1.default
@@ -685,22 +684,23 @@ test.cb('Should abort request when abortController signal is called', (t) => {
             });
         }
     })();
-    t.throwsAsync(async () => {
-        try {
-            await dataSource.getFoo();
-            t.fail();
-        }
-        catch (error) {
-            t.pass('Throw error');
-            throw error;
-        }
-    }, {
-        instanceOf: Error,
-        message: 'Request aborted',
-    }, 'Timeout').finally(t.end);
-    abortController.abort();
+    await Promise.all([t.throwsAsync(async () => {
+            try {
+                await dataSource.getFoo();
+                t.fail();
+            }
+            catch (error) {
+                t.pass('Throw error');
+                throw error;
+            }
+        }, {
+            instanceOf: Error,
+            message: 'Request aborted',
+        }, 'Timeout'),
+        abortController.abort(),
+    ]);
 });
-test.cb('Should timeout because server does not respond fast enough', (t) => {
+(0, ava_1.default)('Should timeout because server does not respond fast enough', async (t) => {
     t.plan(3);
     const path = '/';
     const server = http_1.default
@@ -730,7 +730,7 @@ test.cb('Should timeout because server does not respond fast enough', (t) => {
             return await this.get(path);
         }
     })();
-    t.throwsAsync(async () => {
+    await t.throwsAsync(async () => {
         try {
             await dataSource.getFoo();
             t.fail();
@@ -742,9 +742,9 @@ test.cb('Should timeout because server does not respond fast enough', (t) => {
     }, {
         instanceOf: Error,
         message: 'Headers Timeout Error',
-    }, 'Timeout').finally(t.end);
+    }, 'Timeout');
 });
-test('Should be able to modify request in willSendRequest', async (t) => {
+(0, ava_1.default)('Should be able to modify request in willSendRequest', async (t) => {
     t.plan(3);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -778,7 +778,7 @@ test('Should be able to modify request in willSendRequest', async (t) => {
     const response = await dataSource.getFoo();
     t.deepEqual(response.body, wanted);
 });
-test('Should be able to define base headers for every request', async (t) => {
+(0, ava_1.default)('Should be able to define base headers for every request', async (t) => {
     t.plan(4);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -818,7 +818,7 @@ test('Should be able to define base headers for every request', async (t) => {
     const response = await dataSource.getFoo();
     t.deepEqual(response.body, wanted);
 });
-test('Initialize data source with cache and context', async (t) => {
+(0, ava_1.default)('Initialize data source with cache and context', async (t) => {
     t.plan(3);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -866,7 +866,7 @@ test('Initialize data source with cache and context', async (t) => {
     const response = await dataSource.getFoo();
     t.deepEqual(response.body, wanted);
 });
-test('Should cache a GET response and respond with the result on subsequent calls', async (t) => {
+(0, ava_1.default)('Should cache a GET response and respond with the result on subsequent calls', async (t) => {
     t.plan(15);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -957,7 +957,7 @@ test('Should cache a GET response and respond with the result on subsequent call
         body: wanted,
     });
 });
-test('Should respond with stale-if-error cache on origin error', async (t) => {
+(0, ava_1.default)('Should respond with stale-if-error cache on origin error', async (t) => {
     t.plan(12);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -1040,7 +1040,7 @@ test('Should respond with stale-if-error cache on origin error', async (t) => {
     t.deepEqual(response.body, wanted);
     t.is(cacheMap.size, 1);
 });
-test('Should not cache POST requests by default', async (t) => {
+(0, ava_1.default)('Should not cache POST requests by default', async (t) => {
     t.plan(6);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -1095,7 +1095,7 @@ test('Should not cache POST requests by default', async (t) => {
     t.deepEqual(response.body, wanted);
     t.is(cacheMap.size, 0);
 });
-test('Should only cache GET successful responses with the correct status code', async (t) => {
+(0, ava_1.default)('Should only cache GET successful responses with the correct status code', async (t) => {
     t.plan(30);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -1181,7 +1181,7 @@ test('Should only cache GET successful responses with the correct status code', 
     t.deepEqual(response.body, wanted);
     t.is(cacheMap.size, 0);
 });
-test('Should cache POST successful responses if isRequestCacheable allows to do so', async (t) => {
+(0, ava_1.default)('Should cache POST successful responses if isRequestCacheable allows to do so', async (t) => {
     var _a;
     t.plan(7);
     const path = '/custom/cacheable/post/route';
@@ -1242,7 +1242,7 @@ test('Should cache POST successful responses if isRequestCacheable allows to do 
     t.false(response.memoized);
     t.true(response.isFromCache);
 });
-test.serial('Global maxAge should be used when no maxAge was set or similar.', async (t) => {
+ava_1.default.serial('Global maxAge should be used when no maxAge was set or similar.', async (t) => {
     const path = '/';
     const clock = fake_timers_1.default.install();
     t.teardown(clock.uninstall.bind(clock));
@@ -1284,7 +1284,7 @@ test.serial('Global maxAge should be used when no maxAge was set or similar.', a
     await dataSource.getFoo();
     t.is(testResponse.memoized, false);
 });
-test('Response is not cached due to origin error', async (t) => {
+(0, ava_1.default)('Response is not cached due to origin error', async (t) => {
     const path = '/';
     const server = http_1.default.createServer((req, res) => {
         var _a;
@@ -1333,7 +1333,7 @@ test('Response is not cached due to origin error', async (t) => {
     }, 'message');
     t.is(cacheMap.size, 0);
 });
-test('Should be able to pass custom Undici Pool', async (t) => {
+(0, ava_1.default)('Should be able to pass custom Undici Pool', async (t) => {
     t.plan(2);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -1364,7 +1364,7 @@ test('Should be able to pass custom Undici Pool', async (t) => {
     const response = await dataSource.getFoo();
     t.deepEqual(response.body, wanted);
 });
-test('Should be merge headers', async (t) => {
+(0, ava_1.default)('Should be merge headers', async (t) => {
     t.plan(2);
     const path = '/';
     const mockHeaders = {
@@ -1410,7 +1410,7 @@ test('Should be merge headers', async (t) => {
     const response = await dataSource.getFoo();
     t.deepEqual(response.body, mockHeaders);
 });
-test('Should be able to decode gzip compression', async (t) => {
+(0, ava_1.default)('Should be able to decode gzip compression', async (t) => {
     t.plan(4);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -1456,7 +1456,7 @@ test('Should be able to decode gzip compression', async (t) => {
     t.falsy(response.maxTtl);
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to decode deflate compression', async (t) => {
+(0, ava_1.default)('Should be able to decode deflate compression', async (t) => {
     t.plan(4);
     const path = '/';
     const wanted = { name: 'foo' };
@@ -1502,7 +1502,7 @@ test('Should be able to decode deflate compression', async (t) => {
     t.falsy(response.maxTtl);
     t.deepEqual(response.body, { name: 'foo' });
 });
-test('Should be able to decode brotli compression', async (t) => {
+(0, ava_1.default)('Should be able to decode brotli compression', async (t) => {
     t.plan(4);
     const path = '/';
     const wanted = { name: 'foo' };

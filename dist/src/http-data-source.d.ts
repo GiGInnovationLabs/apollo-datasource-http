@@ -1,10 +1,10 @@
 /// <reference types="node" />
 import { DataSource, DataSourceConfig } from 'apollo-datasource';
 import { Pool } from 'undici';
-import { HttpMethod, ResponseData } from 'undici/types/dispatcher';
+import Dispatcher from 'undici/types/dispatcher';
 import { EventEmitter } from 'stream';
 import { Logger } from 'apollo-server-types';
-declare type AbortSignal = unknown;
+type AbortSignal = unknown;
 export declare class RequestError<T = unknown> extends Error {
     message: string;
     code: number;
@@ -12,7 +12,7 @@ export declare class RequestError<T = unknown> extends Error {
     response: Response<T>;
     constructor(message: string, code: number, request: Request, response: Response<T>);
 }
-export declare type CacheTTLOptions = {
+export type CacheTTLOptions = {
     requestCache?: {
         maxTtl: number;
         maxTtlIfError: number;
@@ -21,10 +21,10 @@ export declare type CacheTTLOptions = {
 interface Dictionary<T> {
     [Key: string]: T | undefined;
 }
-export declare type RequestOptions<BaseURLContext> = Omit<Partial<Request>, 'origin' | 'path' | 'method'> & {
+export type RequestOptions<BaseURLContext> = Omit<Partial<Request>, 'origin' | 'path' | 'method'> & {
     baseUrlContext?: BaseURLContext;
 };
-export declare type Request<T = unknown, BaseURLContext = unknown> = {
+export type Request<T = unknown, BaseURLContext = unknown> = {
     context: Dictionary<string>;
     query: Dictionary<string | number>;
     body: T;
@@ -32,17 +32,17 @@ export declare type Request<T = unknown, BaseURLContext = unknown> = {
     json?: boolean;
     origin: string;
     path: string;
-    method: HttpMethod;
+    method: Dispatcher.HttpMethod;
     memoize?: boolean;
     headers: Dictionary<string>;
     baseUrlContext?: BaseURLContext;
 } & CacheTTLOptions;
-export declare type Response<TResult> = {
+export type Response<TResult> = {
     body: TResult;
     memoized: boolean;
     isFromCache: boolean;
     maxTtl?: number;
-} & Omit<ResponseData, 'body'>;
+} & Omit<Dispatcher.ResponseData, 'body'>;
 export interface LRUOptions {
     readonly maxAge?: number;
     readonly maxSize: number;
