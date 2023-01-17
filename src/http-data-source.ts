@@ -39,9 +39,9 @@ interface Dictionary<T> {
   [Key: string]: T | undefined
 }
 
-export type RequestOptions = Omit<Partial<Request>, 'origin' | 'path' | 'method'>
+export type RequestOptions<BaseURLContext> = Omit<Partial<Request>, 'origin' | 'path' | 'method'> & { baseUrlContext?: BaseURLContext };
 
-export type Request<T = unknown> = {
+export type Request<T = unknown, BaseURLContext = unknown> = {
   context: Dictionary<string>
   query: Dictionary<string | number>
   body: T
@@ -53,6 +53,7 @@ export type Request<T = unknown> = {
   // Indicates if the response of this request should be memoized
   memoize?: boolean
   headers: Dictionary<string>
+  baseUrlContext?: BaseURLContext
 } & CacheTTLOptions
 
 export type Response<TResult> = {
@@ -68,10 +69,10 @@ export interface LRUOptions {
   readonly maxSize: number
 }
 
-export interface HTTPDataSourceOptions {
+export interface HTTPDataSourceOptions<BaseURLContext> {
   logger?: Logger
   pool?: Pool
-  requestOptions?: RequestOptions
+  requestOptions?: RequestOptions<BaseURLContext>
   clientOptions?: Pool.Options
   lru?: Partial<LRUOptions>
 }
@@ -85,15 +86,15 @@ const statusCodeCacheableByDefault = new Set([200, 203])
  * HTTPDataSource is an optimized HTTP Data Source for Apollo Server
  * It focus on reliability and performance.
  */
-export abstract class HTTPDataSource<TContext = any> extends DataSource {
+export abstract class HTTPDataSource<BaseURLContext = any, TContext = any> extends DataSource {
   public context!: TContext
   private logger?: Logger
   private cache!: KeyValueCache<string>
-  private globalRequestOptions?: RequestOptions
+  private globalRequestOptions?: RequestOptions<BaseURLContext>
   private pools = new Map<string, Pool>();
   private readonly memoizedResults: QuickLRU<string, Response<any>>
 
-  constructor(public readonly baseURL: string | (() => Promise<string>) | (() => string), private readonly options?: HTTPDataSourceOptions) {
+  constructor(public readonly baseURL: string | ((opts?: BaseURLContext) => Promise<string>) | ((opts?: BaseURLContext) => string), private readonly options?: HTTPDataSourceOptions<BaseURLContext>) {
     super()
     this.memoizedResults = new QuickLRU({
       // The maximum number of items before evicting the least recently used items.
@@ -106,12 +107,12 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
     this.logger = options?.logger
   }
 
-  async getPool() {
+  async getPool(opts?: BaseURLContext) {
     if (this.options?.pool) {
       return this.options?.pool;
     }
 
-    const baseUrl = await this.getBaseUrl();
+    const baseUrl = await this.getBaseUrl(opts);
 
     if (this.pools.has(baseUrl)) {
       return this.pools.get(baseUrl)!;
@@ -122,12 +123,12 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
     return pool;
   }
 
-  getBaseUrl(): Promise<string> {
+  getBaseUrl(opts?: BaseURLContext): Promise<string> {
     if (typeof this.baseURL === 'string') {
       return Promise.resolve(this.baseURL)
     }
 
-    return Promise.resolve(this.baseURL());
+    return Promise.resolve(this.baseURL(opts));
   }
 
   private buildQueryString(query: Dictionary<string | number>): string {
@@ -238,7 +239,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
    */
   public async get<TResult = unknown>(
     path: string,
-    requestOptions?: RequestOptions,
+    requestOptions?: RequestOptions<BaseURLContext>,
   ): Promise<Response<TResult>> {
     return this.request<TResult>({
       headers: {},
@@ -249,13 +250,13 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'GET',
       path,
-      origin: await this.getBaseUrl(),
+      origin: await this.getBaseUrl(requestOptions?.baseUrlContext),
     })
   }
 
   public async post<TResult = unknown>(
     path: string,
-    requestOptions?: RequestOptions,
+    requestOptions?: RequestOptions<BaseURLContext>,
   ): Promise<Response<TResult>> {
     return this.request<TResult>({
       headers: {},
@@ -265,13 +266,13 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'POST',
       path,
-      origin: await this.getBaseUrl(),
+      origin: await this.getBaseUrl(requestOptions?.baseUrlContext),
     })
   }
 
   public async delete<TResult = unknown>(
     path: string,
-    requestOptions?: RequestOptions,
+    requestOptions?: RequestOptions<BaseURLContext>,
   ): Promise<Response<TResult>> {
     return this.request<TResult>({
       headers: {},
@@ -281,13 +282,13 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'DELETE',
       path,
-      origin: await this.getBaseUrl(),
+      origin: await this.getBaseUrl(requestOptions?.baseUrlContext),
     })
   }
 
   public async put<TResult = unknown>(
     path: string,
-    requestOptions?: RequestOptions,
+    requestOptions?: RequestOptions<BaseURLContext>,
   ): Promise<Response<TResult>> {
     return this.request<TResult>({
       headers: {},
@@ -297,13 +298,13 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'PUT',
       path,
-      origin: await this.getBaseUrl(),
+      origin: await this.getBaseUrl(requestOptions?.baseUrlContext),
     })
   }
 
   public async patch<TResult = unknown>(
     path: string,
-    requestOptions?: RequestOptions,
+    requestOptions?: RequestOptions<BaseURLContext>,
   ): Promise<Response<TResult>> {
     return this.request<TResult>({
       headers: {},
@@ -313,12 +314,12 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'PATCH',
       path,
-      origin: await this.getBaseUrl(),
+      origin: await this.getBaseUrl(requestOptions?.baseUrlContext),
     })
   }
 
   private async performRequest<TResult>(
-    request: Request,
+    request: Request<unknown, BaseURLContext>,
     cacheKey: string,
   ): Promise<Response<TResult>> {
     try {
@@ -341,7 +342,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
         body: request.body as string,
       }
 
-      const pool = await this.getPool();
+      const pool = await this.getPool(request.baseUrlContext);
       const responseData = await pool.request(requestOptions)
       const body = responseData.body
       const headers = responseData.headers
@@ -422,7 +423,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
     }
   }
 
-  private async request<TResult = unknown>(request: Request): Promise<Response<TResult>> {
+  private async request<TResult = unknown>(request: Request<unknown, BaseURLContext>): Promise<Response<TResult>> {
     if (Object.keys(request.query).length > 0) {
       request.path = request.path + '?' + this.buildQueryString(request.query)
     }
