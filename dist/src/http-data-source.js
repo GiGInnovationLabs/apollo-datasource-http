@@ -38,12 +38,12 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
         this.globalRequestOptions = options === null || options === void 0 ? void 0 : options.requestOptions;
         this.logger = options === null || options === void 0 ? void 0 : options.logger;
     }
-    async getPool() {
+    async getPool(opts) {
         var _a, _b, _c;
         if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.pool) {
             return (_b = this.options) === null || _b === void 0 ? void 0 : _b.pool;
         }
-        const baseUrl = await this.getBaseUrl();
+        const baseUrl = await this.getBaseUrl(opts);
         if (this.pools.has(baseUrl)) {
             return this.pools.get(baseUrl);
         }
@@ -51,11 +51,11 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
         this.pools.set(baseUrl, pool);
         return pool;
     }
-    getBaseUrl() {
+    getBaseUrl(opts) {
         if (typeof this.baseURL === 'string') {
             return Promise.resolve(this.baseURL);
         }
-        return Promise.resolve(this.baseURL());
+        return Promise.resolve(this.baseURL(opts));
     }
     buildQueryString(query) {
         const params = new url_1.URLSearchParams();
@@ -105,7 +105,7 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
             ...requestOptions,
             method: 'GET',
             path,
-            origin: await this.getBaseUrl(),
+            origin: await this.getBaseUrl(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.baseUrlContext),
         });
     }
     async post(path, requestOptions) {
@@ -117,7 +117,7 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
             ...requestOptions,
             method: 'POST',
             path,
-            origin: await this.getBaseUrl(),
+            origin: await this.getBaseUrl(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.baseUrlContext),
         });
     }
     async delete(path, requestOptions) {
@@ -129,7 +129,7 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
             ...requestOptions,
             method: 'DELETE',
             path,
-            origin: await this.getBaseUrl(),
+            origin: await this.getBaseUrl(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.baseUrlContext),
         });
     }
     async put(path, requestOptions) {
@@ -141,7 +141,7 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
             ...requestOptions,
             method: 'PUT',
             path,
-            origin: await this.getBaseUrl(),
+            origin: await this.getBaseUrl(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.baseUrlContext),
         });
     }
     async patch(path, requestOptions) {
@@ -153,7 +153,7 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
             ...requestOptions,
             method: 'PATCH',
             path,
-            origin: await this.getBaseUrl(),
+            origin: await this.getBaseUrl(requestOptions === null || requestOptions === void 0 ? void 0 : requestOptions.baseUrlContext),
         });
     }
     async performRequest(request, cacheKey) {
@@ -174,7 +174,7 @@ class HTTPDataSource extends apollo_datasource_1.DataSource {
                 signal: request.signal,
                 body: request.body,
             };
-            const pool = await this.getPool();
+            const pool = await this.getPool(request.baseUrlContext);
             const responseData = await pool.request(requestOptions);
             const body = responseData.body;
             const headers = responseData.headers;

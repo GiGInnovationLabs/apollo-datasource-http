@@ -21,8 +21,10 @@ export declare type CacheTTLOptions = {
 interface Dictionary<T> {
     [Key: string]: T | undefined;
 }
-export declare type RequestOptions = Omit<Partial<Request>, 'origin' | 'path' | 'method'>;
-export declare type Request<T = unknown> = {
+export declare type RequestOptions<BaseURLContext> = Omit<Partial<Request>, 'origin' | 'path' | 'method'> & {
+    baseUrlContext?: BaseURLContext;
+};
+export declare type Request<T = unknown, BaseURLContext = unknown> = {
     context: Dictionary<string>;
     query: Dictionary<string | number>;
     body: T;
@@ -33,6 +35,7 @@ export declare type Request<T = unknown> = {
     method: HttpMethod;
     memoize?: boolean;
     headers: Dictionary<string>;
+    baseUrlContext?: BaseURLContext;
 } & CacheTTLOptions;
 export declare type Response<TResult> = {
     body: TResult;
@@ -44,15 +47,15 @@ export interface LRUOptions {
     readonly maxAge?: number;
     readonly maxSize: number;
 }
-export interface HTTPDataSourceOptions {
+export interface HTTPDataSourceOptions<BaseURLContext> {
     logger?: Logger;
     pool?: Pool;
-    requestOptions?: RequestOptions;
+    requestOptions?: RequestOptions<BaseURLContext>;
     clientOptions?: Pool.Options;
     lru?: Partial<LRUOptions>;
 }
-export declare abstract class HTTPDataSource<TContext = any> extends DataSource {
-    readonly baseURL: string | (() => Promise<string>) | (() => string);
+export declare abstract class HTTPDataSource<BaseURLContext = any, TContext = any> extends DataSource {
+    readonly baseURL: string | ((opts?: BaseURLContext) => Promise<string>) | ((opts?: BaseURLContext) => string);
     private readonly options?;
     context: TContext;
     private logger?;
@@ -60,9 +63,9 @@ export declare abstract class HTTPDataSource<TContext = any> extends DataSource 
     private globalRequestOptions?;
     private pools;
     private readonly memoizedResults;
-    constructor(baseURL: string | (() => Promise<string>) | (() => string), options?: HTTPDataSourceOptions | undefined);
-    getPool(): Promise<Pool>;
-    getBaseUrl(): Promise<string>;
+    constructor(baseURL: string | ((opts?: BaseURLContext) => Promise<string>) | ((opts?: BaseURLContext) => string), options?: HTTPDataSourceOptions<BaseURLContext> | undefined);
+    getPool(opts?: BaseURLContext): Promise<Pool>;
+    getBaseUrl(opts?: BaseURLContext): Promise<string>;
     private buildQueryString;
     initialize(config: DataSourceConfig<TContext>): void;
     protected isResponseOk(statusCode: number): boolean;
@@ -73,11 +76,11 @@ export declare abstract class HTTPDataSource<TContext = any> extends DataSource 
     protected onRequest?(request: Request): Promise<void>;
     protected onResponse<TResult = unknown>(request: Request, response: Response<TResult>): Response<TResult>;
     protected onError?(_error: Error, requestOptions: Request): void;
-    get<TResult = unknown>(path: string, requestOptions?: RequestOptions): Promise<Response<TResult>>;
-    post<TResult = unknown>(path: string, requestOptions?: RequestOptions): Promise<Response<TResult>>;
-    delete<TResult = unknown>(path: string, requestOptions?: RequestOptions): Promise<Response<TResult>>;
-    put<TResult = unknown>(path: string, requestOptions?: RequestOptions): Promise<Response<TResult>>;
-    patch<TResult = unknown>(path: string, requestOptions?: RequestOptions): Promise<Response<TResult>>;
+    get<TResult = unknown>(path: string, requestOptions?: RequestOptions<BaseURLContext>): Promise<Response<TResult>>;
+    post<TResult = unknown>(path: string, requestOptions?: RequestOptions<BaseURLContext>): Promise<Response<TResult>>;
+    delete<TResult = unknown>(path: string, requestOptions?: RequestOptions<BaseURLContext>): Promise<Response<TResult>>;
+    put<TResult = unknown>(path: string, requestOptions?: RequestOptions<BaseURLContext>): Promise<Response<TResult>>;
+    patch<TResult = unknown>(path: string, requestOptions?: RequestOptions<BaseURLContext>): Promise<Response<TResult>>;
     private performRequest;
     private request;
 }
