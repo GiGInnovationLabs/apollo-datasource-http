@@ -87,13 +87,13 @@ const statusCodeCacheableByDefault = new Set([200, 203])
  */
 export abstract class HTTPDataSource<TContext = any> extends DataSource {
   public context!: TContext
-  private pool: Pool
   private logger?: Logger
   private cache!: KeyValueCache<string>
   private globalRequestOptions?: RequestOptions
+  private pools = new Map<string, Pool>();
   private readonly memoizedResults: QuickLRU<string, Response<any>>
 
-  constructor(public readonly baseURL: string, private readonly options?: HTTPDataSourceOptions) {
+  constructor(public readonly baseURL: string | (() => Promise<string>) | (() => string), private readonly options?: HTTPDataSourceOptions) {
     super()
     this.memoizedResults = new QuickLRU({
       // The maximum number of items before evicting the least recently used items.
@@ -102,9 +102,32 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       // By default maxAge will be Infinity, which means that items will never expire.
       maxAge: this.options?.lru?.maxAge,
     })
-    this.pool = options?.pool ?? new Pool(this.baseURL, options?.clientOptions)
     this.globalRequestOptions = options?.requestOptions
     this.logger = options?.logger
+  }
+
+  async getPool() {
+    if (this.options?.pool) {
+      return this.options?.pool;
+    }
+
+    const baseUrl = await this.getBaseUrl();
+
+    if (this.pools.has(baseUrl)) {
+      return this.pools.get(baseUrl)!;
+    }
+
+    const pool = new Pool(baseUrl, this.options?.clientOptions);
+    this.pools.set(baseUrl, pool);
+    return pool;
+  }
+
+  getBaseUrl(): Promise<string> {
+    if (typeof this.baseURL === 'string') {
+      return Promise.resolve(this.baseURL)
+    }
+
+    return Promise.resolve(this.baseURL());
   }
 
   private buildQueryString(query: Dictionary<string | number>): string {
@@ -226,7 +249,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'GET',
       path,
-      origin: this.baseURL,
+      origin: await this.getBaseUrl(),
     })
   }
 
@@ -242,7 +265,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'POST',
       path,
-      origin: this.baseURL,
+      origin: await this.getBaseUrl(),
     })
   }
 
@@ -258,7 +281,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'DELETE',
       path,
-      origin: this.baseURL,
+      origin: await this.getBaseUrl(),
     })
   }
 
@@ -274,7 +297,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'PUT',
       path,
-      origin: this.baseURL,
+      origin: await this.getBaseUrl(),
     })
   }
 
@@ -290,7 +313,7 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
       ...requestOptions,
       method: 'PATCH',
       path,
-      origin: this.baseURL,
+      origin: await this.getBaseUrl(),
     })
   }
 
@@ -318,7 +341,8 @@ export abstract class HTTPDataSource<TContext = any> extends DataSource {
         body: request.body as string,
       }
 
-      const responseData = await this.pool.request(requestOptions)
+      const pool = await this.getPool();
+      const responseData = await pool.request(requestOptions)
       const body = responseData.body
       const headers = responseData.headers
 
